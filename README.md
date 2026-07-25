@@ -3,7 +3,7 @@
 [![CI](https://github.com/swift-foundations/swift-json-web-token/workflows/CI/badge.svg)](https://github.com/swift-foundations/swift-json-web-token/actions/workflows/ci.yml)
 ![Development Status](https://img.shields.io/badge/status-active--development-blue.svg)
 
-A Swift package for creating, signing, and verifying JSON Web Tokens (JWTs) using Apple's Crypto framework.
+Creates, signs, and verifies JSON Web Tokens (JWTs) over Apple's Crypto framework, with RFC 7519 claims and timing validation.
 
 ## Features
 
@@ -28,6 +28,17 @@ Add this package to your `Package.swift`:
 dependencies: [
     .package(url: "https://github.com/swift-foundations/swift-json-web-token.git", from: "0.0.2")
 ]
+```
+
+Add the product to your target:
+
+```swift
+.target(
+    name: "YourTarget",
+    dependencies: [
+        .product(name: "JWT", package: "swift-json-web-token")
+    ]
+)
 ```
 
 ## Quick Start
