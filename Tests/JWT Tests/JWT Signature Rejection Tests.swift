@@ -42,6 +42,12 @@ struct JWT_Signature_Rejection_Tests {
         )
     }
 
+    @Test("Signs with a signature distinct from the signing input")
+    func signsDistinctlyFromInput() throws {
+        let jwt = try Self.token()
+        #expect(try jwt.signature != jwt.signingInput())
+    }
+
     @Test("Rejects a signature that does not match")
     func rejectsNonMatchingSignature() throws {
         let jwt = try Self.token()
