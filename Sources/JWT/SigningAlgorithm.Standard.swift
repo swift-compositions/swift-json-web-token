@@ -18,7 +18,6 @@ extension SigningAlgorithm {
         case hmacSHA384
         case hmacSHA512
         case ecdsaSHA256
-        case none
 
         /// The corresponding ``SigningAlgorithm``.
         public var algorithm: SigningAlgorithm {
@@ -27,7 +26,6 @@ extension SigningAlgorithm {
             case .hmacSHA384: return .hmacSHA384
             case .hmacSHA512: return .hmacSHA512
             case .ecdsaSHA256: return .ecdsaSHA256
-            case .none: return .none
             }
         }
     }

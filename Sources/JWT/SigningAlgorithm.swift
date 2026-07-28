@@ -51,8 +51,11 @@ extension SigningAlgorithm {
             guard let symmetricKey = key._symmetricKey else {
                 throw .invalidSignature("HMAC requires a symmetric key")
             }
-            let expected = Data(HMAC<SHA256>.authenticationCode(for: data, using: symmetricKey))
-            return signature == expected
+            return HMAC<SHA256>.isValidAuthenticationCode(
+                signature,
+                authenticating: data,
+                using: symmetricKey
+            )
         }
     )
 
@@ -69,8 +72,11 @@ extension SigningAlgorithm {
             guard let symmetricKey = key._symmetricKey else {
                 throw .invalidSignature("HMAC requires a symmetric key")
             }
-            let expected = Data(HMAC<SHA384>.authenticationCode(for: data, using: symmetricKey))
-            return signature == expected
+            return HMAC<SHA384>.isValidAuthenticationCode(
+                signature,
+                authenticating: data,
+                using: symmetricKey
+            )
         }
     )
 
@@ -87,8 +93,11 @@ extension SigningAlgorithm {
             guard let symmetricKey = key._symmetricKey else {
                 throw .invalidSignature("HMAC requires a symmetric key")
             }
-            let expected = Data(HMAC<SHA512>.authenticationCode(for: data, using: symmetricKey))
-            return signature == expected
+            return HMAC<SHA512>.isValidAuthenticationCode(
+                signature,
+                authenticating: data,
+                using: symmetricKey
+            )
         }
     )
 
@@ -118,15 +127,11 @@ extension SigningAlgorithm {
         }
     )
 
-    /// The unsecured `none` algorithm. Provides **no** integrity protection; use
-    /// only when the token is protected by other means (RFC 7518 §3.6).
-    public static let none = SigningAlgorithm(
-        algorithmName: "none",
-        sign: { _, _ throws(RFC_7519.Error) in Data() },
-        verify: { signature, _, _ throws(RFC_7519.Error) in signature.isEmpty }
-    )
-
     /// Resolves a standard algorithm from its `alg` header value.
+    ///
+    /// Only the algorithms this library implements resolve; every other value —
+    /// including an absent one — returns `nil` and is treated as unsupported by
+    /// callers.
     ///
     /// - Parameter algorithmName: The `alg` value (e.g. `"HS256"`).
     /// - Returns: The matching algorithm, or `nil` if unsupported.
@@ -136,7 +141,6 @@ extension SigningAlgorithm {
         case "HS384": return .hmacSHA384
         case "HS512": return .hmacSHA512
         case "ES256": return .ecdsaSHA256
-        case "none": return SigningAlgorithm.none
         default: return nil
         }
     }
