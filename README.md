@@ -97,10 +97,10 @@ let jwt = try JWT.parse(from: tokenString)
 let verificationKey = VerificationKey.symmetric(string: "your-secret-key")
 
 // Verify signature only
-let isValidSignature = try jwt.verify(with: verificationKey)
+let isValidSignature = try jwt.verify(with: verificationKey, algorithm: .hmacSHA256)
 
 // Verify signature and validate timing (exp, nbf, iat)
-let isFullyValid = try jwt.verifyAndValidate(with: verificationKey)
+let isFullyValid = try jwt.verifyAndValidate(with: verificationKey, algorithm: .hmacSHA256)
 ```
 
 #### ECDSA Verification
@@ -114,7 +114,7 @@ let privateKey = P256.Signing.PrivateKey()
 let verificationKey = VerificationKey.ecdsa(from: .ecdsa(privateKey))!
 
 // Verify the JWT
-let isValid = try jwt.verifyAndValidate(with: verificationKey)
+let isValid = try jwt.verifyAndValidate(with: verificationKey, algorithm: .ecdsaSHA256)
 ```
 
 Alternative - using raw public key data:
@@ -127,7 +127,7 @@ let privateKey = P256.Signing.PrivateKey()
 let publicKeyData = privateKey.publicKey.rawRepresentation
 let verificationKey = try VerificationKey.ecdsa(rawRepresentation: publicKeyData)
 
-let isValid = try jwt.verifyAndValidate(with: verificationKey)
+let isValid = try jwt.verifyAndValidate(with: verificationKey, algorithm: .ecdsaSHA256)
 ```
 
 ## Advanced Usage
@@ -178,6 +178,7 @@ let isActive = jwt.payload.additionalClaim("active", as: Bool.self)
 // Validate with custom timing parameters
 let isValid = try jwt.verifyAndValidate(
     with: verificationKey,
+    algorithm: .hmacSHA256,
     currentTime: Date(), // Custom current time
     clockSkew: 120 // Allow 2 minutes clock skew
 )
@@ -208,7 +209,6 @@ let publicKeyVerify = try VerificationKey.ecdsa(rawRepresentation: publicKeyData
 | `HS384` | HMAC-SHA384 | Enhanced security with shared secrets |
 | `HS512` | HMAC-SHA512 | Maximum security with shared secrets |
 | `ES256` | ECDSA-SHA256 | Public/private key scenarios |
-| `none` | No signature | Testing only (not recommended for production) |
 
 ## Error Handling
 
@@ -217,7 +217,7 @@ The package throws RFC 7519 compliant errors:
 ```swift
 do {
     let jwt = try JWT.hmacSHA256(/*...*/)
-    let isValid = try jwt.verifyAndValidate(with: key)
+    let isValid = try jwt.verifyAndValidate(with: key, algorithm: .hmacSHA256)
 } catch RFC_7519.Error.invalidSignature(let message) {
     print("Invalid signature: \(message)")
 } catch RFC_7519.Error.tokenExpired {

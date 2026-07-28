@@ -242,11 +242,11 @@ struct JWT_Convenience_Tests {
     )
 
     // Test isValid
-    #expect(jwt.isValid(with: .symmetric(string: secret)))
-    #expect(!jwt.isValid(with: .symmetric(string: "wrong-secret")))
+    #expect(jwt.isValid(with: .symmetric(string: secret), algorithm: .hmacSHA256))
+    #expect(!jwt.isValid(with: .symmetric(string: "wrong-secret"), algorithm: .hmacSHA256))
 
     // Test validation errors
-    let errors = jwt.validationErrors(with: .symmetric(string: "wrong-secret"))
+    let errors = jwt.validationErrors(with: .symmetric(string: "wrong-secret"), algorithm: .hmacSHA256)
     #expect(errors.contains { $0.contains("signature") || $0.contains("Signature") })
 
     // Test expired token
@@ -257,7 +257,7 @@ struct JWT_Convenience_Tests {
       secretKey: secret
     )
 
-    let expiredErrors = expiredJWT.validationErrors(with: .symmetric(string: secret))
+    let expiredErrors = expiredJWT.validationErrors(with: .symmetric(string: secret), algorithm: .hmacSHA256)
     #expect(expiredErrors.contains("Token is expired"))
   }
 }

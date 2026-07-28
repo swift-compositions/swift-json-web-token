@@ -151,21 +151,26 @@ extension JWT.Payload {
 // MARK: - Quick validation
 
 extension JWT {
-    /// Whether the token verifies and passes timing validation with `key`.
-    public func isValid(with key: VerificationKey) -> Bool {
+    /// Whether the token verifies and passes timing validation with `key`, under
+    /// the algorithm the caller declares.
+    public func isValid(with key: VerificationKey, algorithm: SigningAlgorithm) -> Bool {
         do {
-            return try verifyAndValidate(with: key)
+            return try verifyAndValidate(with: key, algorithm: algorithm)
         } catch {
             return false
         }
     }
 
-    /// A list of human-readable validation problems for the token under `key`.
-    public func validationErrors(with key: VerificationKey) -> [String] {
+    /// A list of human-readable validation problems for the token under `key`
+    /// and the algorithm the caller declares.
+    public func validationErrors(
+        with key: VerificationKey,
+        algorithm: SigningAlgorithm
+    ) -> [String] {
         var errors: [String] = []
 
         do {
-            let signatureValid = try verify(with: key)
+            let signatureValid = try verify(with: key, algorithm: algorithm)
             if !signatureValid {
                 errors.append("Invalid signature")
             }

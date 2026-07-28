@@ -185,15 +185,27 @@ extension JWT {
 // MARK: - Verification
 
 extension JWT {
-    /// Verifies the JWT signature (only) against a key.
+    /// Verifies the JWT signature (only) against a key, under the algorithm the
+    /// caller declares.
     ///
-    /// - Parameter key: The verification key.
+    /// The algorithm is supplied by the caller and never derived from the token.
+    /// The `alg` header is treated as an untrusted assertion: it must match
+    /// `algorithm`, and it selects nothing.
+    ///
+    /// - Parameters:
+    ///   - key: The verification key.
+    ///   - algorithm: The algorithm the caller requires the token to carry.
     /// - Returns: `true` if the signature is valid.
     /// - Throws: ``RFC_7519/Error/unsupportedAlgorithm(_:)`` if the header `alg`
-    ///   is not recognized.
-    public func verify(with key: VerificationKey) throws(RFC_7519.Error) -> Bool {
-        guard let algorithm = SigningAlgorithm.from(algorithmName: header.alg) else {
-            throw .unsupportedAlgorithm("Unsupported algorithm: \(header.alg)")
+    ///   is not the declared algorithm.
+    public func verify(
+        with key: VerificationKey,
+        algorithm: SigningAlgorithm
+    ) throws(RFC_7519.Error) -> Bool {
+        guard header.alg == algorithm.algorithmName else {
+            throw .unsupportedAlgorithm(
+                "Expected \(algorithm.algorithmName), token declares \(header.alg)"
+            )
         }
         let input = try signingInput()
         return try algorithm.verify(signature, input, key)
@@ -203,16 +215,18 @@ extension JWT {
     ///
     /// - Parameters:
     ///   - key: The verification key.
+    ///   - algorithm: The algorithm the caller requires the token to carry.
     ///   - currentTime: The reference time (defaults to now).
     ///   - clockSkew: Allowed clock skew in seconds (defaults to 60).
     /// - Returns: `true` if the signature is valid and the timing checks pass.
     /// - Throws: ``RFC_7519/Error`` (including `tokenExpired` / `tokenNotYetValid`).
     public func verifyAndValidate(
         with key: VerificationKey,
+        algorithm: SigningAlgorithm,
         currentTime: Date = Date(),
         clockSkew: TimeInterval = 60
     ) throws(RFC_7519.Error) -> Bool {
-        guard try verify(with: key) else { return false }
+        guard try verify(with: key, algorithm: algorithm) else { return false }
         try payload.validateTiming(currentTime: currentTime, clockSkew: clockSkew)
         return true
     }

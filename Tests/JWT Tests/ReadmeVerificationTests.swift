@@ -72,11 +72,11 @@ struct ReadmeVerificationTests {
     let verificationKey = VerificationKey.symmetric(string: "your-secret-key")
 
     // Verify signature only
-    let isValidSignature = try parsedJWT.verify(with: verificationKey)
+    let isValidSignature = try parsedJWT.verify(with: verificationKey, algorithm: .hmacSHA256)
     #expect(isValidSignature)
 
     // Verify signature and validate timing (exp, nbf, iat)
-    let isFullyValid = try parsedJWT.verifyAndValidate(with: verificationKey)
+    let isFullyValid = try parsedJWT.verifyAndValidate(with: verificationKey, algorithm: .hmacSHA256)
     #expect(isFullyValid)
   }
 
@@ -94,7 +94,7 @@ struct ReadmeVerificationTests {
     )
 
     // Verify the JWT
-    let isValid = try jwt.verifyAndValidate(with: verificationKey)
+    let isValid = try jwt.verifyAndValidate(with: verificationKey, algorithm: .ecdsaSHA256)
     #expect(isValid)
   }
 
@@ -111,7 +111,7 @@ struct ReadmeVerificationTests {
       privateKey: privateKey
     )
 
-    let isValid = try jwt.verifyAndValidate(with: verificationKey)
+    let isValid = try jwt.verifyAndValidate(with: verificationKey, algorithm: .ecdsaSHA256)
     #expect(isValid)
   }
 
@@ -187,6 +187,7 @@ struct ReadmeVerificationTests {
     // Validate with custom timing parameters
     let isValid = try jwt.verifyAndValidate(
       with: verificationKey,
+      algorithm: .hmacSHA256,
       currentTime: Date(),  // Custom current time
       clockSkew: 120  // Allow 2 minutes clock skew
     )
@@ -255,7 +256,7 @@ struct ReadmeVerificationTests {
         secretKey: "test-key"
       )
       let key = VerificationKey.symmetric(string: "test-key")
-      let isValid = try jwt.verifyAndValidate(with: key)
+      let isValid = try jwt.verifyAndValidate(with: key, algorithm: .hmacSHA256)
       #expect(!isValid)  // Should not reach here
     } catch RFC_7519.Error.tokenExpired {
       // Expected error for expired token

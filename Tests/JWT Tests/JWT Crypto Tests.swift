@@ -23,7 +23,7 @@ import Testing
 //
 // 2. Verify a JWT:
 //    let receivedJWT = try JWT.parse(from: tokenString)
-//    let isValid = try receivedJWT.verify(with: .symmetric(string: "my-secret-key"))
+//    let isValid = try receivedJWT.verify(with: .symmetric(string: "my-secret-key"), algorithm: .hmacSHA256)
 //
 // 3. Create with expiration and claims:
 //    let jwt = try JWT.hmacSHA256(
@@ -36,7 +36,8 @@ import Testing
 //
 // 4. Verify with expiration check:
 //    let isValidAndNotExpired = try jwt.verifyAndValidate(
-//        with: .symmetric(string: "secret")
+//        with: .symmetric(string: "secret"),
+//        algorithm: .hmacSHA256
 //    )
 
 @Suite("JWT Crypto Tests")
@@ -110,7 +111,7 @@ struct JWT_Crypto_Tests {
 
     // Later, verify the token
     let verified = try JWT.parse(from: tokenString)
-    let isValid = try verified.verify(with: .symmetric(string: secretKey))
+    let isValid = try verified.verify(with: .symmetric(string: secretKey), algorithm: .hmacSHA256)
     #expect(isValid)
   }
 
@@ -239,7 +240,7 @@ struct JWT_Crypto_Tests {
 
     // Later, verify the token
     let receivedToken = try JWT.parse(from: tokenString)
-    let isValid = try receivedToken.verify(with: .symmetric(string: secret))
+    let isValid = try receivedToken.verify(with: .symmetric(string: secret), algorithm: .hmacSHA256)
 
     #expect(isValid)
   }
@@ -261,7 +262,8 @@ struct JWT_Crypto_Tests {
 
     // This checks both signature AND expiration/timing
     let isValidAndNotExpired = try receivedToken.verifyAndValidate(
-      with: .symmetric(string: secret)
+      with: .symmetric(string: secret),
+      algorithm: .hmacSHA256
     )
 
     #expect(isValidAndNotExpired)
@@ -287,7 +289,7 @@ struct JWT_Crypto_Tests {
 
     // Verify and extract claims
     let receivedToken = try JWT.parse(from: tokenString)
-    let isValid = try receivedToken.verify(with: .symmetric(string: secret))
+    let isValid = try receivedToken.verify(with: .symmetric(string: secret), algorithm: .hmacSHA256)
 
     if isValid {
       // Safe to extract claims
@@ -349,7 +351,7 @@ struct JWT_Crypto_Tests {
     #expect(jwt.payload.iss == "ecdsa-issuer")
 
     // Verify signature
-    let isValid = try jwt.verify(with: verificationKey)
+    let isValid = try jwt.verify(with: verificationKey, algorithm: .ecdsaSHA256)
     #expect(isValid)
   }
 
@@ -427,7 +429,7 @@ struct JWT_Crypto_Tests {
 
     // Verify the token
     let verificationKey = VerificationKey.symmetric(string: "convenience-key")
-    let isValid = try jwt.verify(with: verificationKey)
+    let isValid = try jwt.verify(with: verificationKey, algorithm: .hmacSHA256)
     #expect(isValid)
   }
 
@@ -460,11 +462,11 @@ struct JWT_Crypto_Tests {
     )
 
     // Correct key should verify
-    let isValidCorrect = try jwt.verify(with: verificationKey)
+    let isValidCorrect = try jwt.verify(with: verificationKey, algorithm: .hmacSHA256)
     #expect(isValidCorrect)
 
     // Wrong key should fail
-    let isValidWrong = try jwt.verify(with: wrongKey)
+    let isValidWrong = try jwt.verify(with: wrongKey, algorithm: .hmacSHA256)
     #expect(!isValidWrong)
   }
 
@@ -481,11 +483,11 @@ struct JWT_Crypto_Tests {
     )
 
     // Signature should be valid but timing should fail
-    let isSignatureValid = try expiredJWT.verify(with: verificationKey)
+    let isSignatureValid = try expiredJWT.verify(with: verificationKey, algorithm: .hmacSHA256)
     #expect(isSignatureValid)
 
     #expect(throws: RFC_7519.Error.self) {
-      try expiredJWT.verifyAndValidate(with: verificationKey)
+      try expiredJWT.verifyAndValidate(with: verificationKey, algorithm: .hmacSHA256)
     }
 
     // Create valid token
@@ -497,7 +499,7 @@ struct JWT_Crypto_Tests {
     )
 
     // Both signature and timing should be valid
-    let isValid = try validJWT.verifyAndValidate(with: verificationKey)
+    let isValid = try validJWT.verifyAndValidate(with: verificationKey, algorithm: .hmacSHA256)
     #expect(isValid)
   }
 
@@ -515,11 +517,11 @@ struct JWT_Crypto_Tests {
     )
 
     // Signature should be valid but timing should fail
-    let isSignatureValid = try jwt.verify(with: verificationKey)
+    let isSignatureValid = try jwt.verify(with: verificationKey, algorithm: .hmacSHA256)
     #expect(isSignatureValid)
 
     #expect(throws: RFC_7519.Error.self) {
-      try jwt.verifyAndValidate(with: verificationKey)
+      try jwt.verifyAndValidate(with: verificationKey, algorithm: .hmacSHA256)
     }
   }
 
@@ -531,7 +533,6 @@ struct JWT_Crypto_Tests {
     #expect(SigningAlgorithm.hmacSHA384.algorithmName == "HS384")
     #expect(SigningAlgorithm.hmacSHA512.algorithmName == "HS512")
     #expect(SigningAlgorithm.ecdsaSHA256.algorithmName == "ES256")
-    #expect(SigningAlgorithm.none.algorithmName == "none")
   }
 
   @Test("Algorithm from string")
@@ -540,7 +541,8 @@ struct JWT_Crypto_Tests {
     #expect(SigningAlgorithm.from(algorithmName: "HS384")?.algorithmName == "HS384")
     #expect(SigningAlgorithm.from(algorithmName: "HS512")?.algorithmName == "HS512")
     #expect(SigningAlgorithm.from(algorithmName: "ES256")?.algorithmName == "ES256")
-    #expect(SigningAlgorithm.from(algorithmName: "none")?.algorithmName == "none")
+    #expect(SigningAlgorithm.from(algorithmName: "none") == nil)
+    #expect(SigningAlgorithm.from(algorithmName: "") == nil)
     #expect(SigningAlgorithm.from(algorithmName: "UNKNOWN") == nil)
   }
 
@@ -572,10 +574,10 @@ struct JWT_Crypto_Tests {
     let verifyKey1 = VerificationKey.symmetric(string: "test-key")
     let verifyKey2 = VerificationKey.symmetric(data: Data("test-key".utf8))
 
-    #expect((try? jwt1.verify(with: verifyKey1)) == true)
-    #expect((try? jwt1.verify(with: verifyKey2)) == true)
-    #expect((try? jwt2.verify(with: verifyKey1)) == true)
-    #expect((try? jwt2.verify(with: verifyKey2)) == true)
+    #expect((try? jwt1.verify(with: verifyKey1, algorithm: .hmacSHA256)) == true)
+    #expect((try? jwt1.verify(with: verifyKey2, algorithm: .hmacSHA256)) == true)
+    #expect((try? jwt2.verify(with: verifyKey1, algorithm: .hmacSHA256)) == true)
+    #expect((try? jwt2.verify(with: verifyKey2, algorithm: .hmacSHA256)) == true)
   }
 
   @Test("ECDSA key generation")
@@ -591,30 +593,11 @@ struct JWT_Crypto_Tests {
       expiresIn: 3600
     )
 
-    let isValid = try jwt.verify(with: verificationKey)
+    let isValid = try jwt.verify(with: verificationKey, algorithm: .ecdsaSHA256)
     #expect(isValid)
   }
 
   // MARK: - Edge Cases
-
-  @Test("JWT with no algorithm (none)")
-  func testJWTWithNoAlgorithm() throws {
-    let jwt = try JWT.signed(
-      algorithm: .none,
-      key: .symmetric(string: "ignored"),
-      issuer: "none-issuer",
-      subject: "none-user",
-      expiresIn: 3600
-    )
-
-    #expect(jwt.header.alg == "none")
-    #expect(jwt.signature.isEmpty)
-
-    // Verification should work with any key for 'none' algorithm
-    let verificationKey = VerificationKey.symmetric(string: "any-key")
-    let isValid = try jwt.verify(with: verificationKey)
-    #expect(isValid)
-  }
 
   @Test("JWT static method with full configuration")
   func testJWTStaticMethodFullConfiguration() throws {
