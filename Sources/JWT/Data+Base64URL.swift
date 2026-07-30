@@ -24,7 +24,8 @@ extension Data {
 
     /// Decodes a Base64URL string (with or without padding) into bytes.
     init?(base64URLEncoded string: String) {
-        var base64 = string
+        var base64 =
+            string
             .replacingOccurrences(of: "-", with: "+")
             .replacingOccurrences(of: "_", with: "/")
 

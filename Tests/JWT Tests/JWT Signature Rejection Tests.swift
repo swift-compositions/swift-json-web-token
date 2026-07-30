@@ -10,7 +10,7 @@ import Testing
 @testable import JWT
 
 @Suite("JWT Signature Rejection Tests")
-struct JWT_Signature_Rejection_Tests {
+struct `JWT Signature Rejection Tests` {
 
     private static let secret = "a-secret-long-enough-for-hmac-sha-256-use"
 
@@ -190,7 +190,7 @@ struct JWT_Signature_Rejection_Tests {
     @Test("Rejects an HMAC token presented against an asymmetric key")
     func rejectsMismatchedKeyKind() throws {
         let jwt = try Self.token()
-        let ecdsaKey = VerificationKey.ecdsa(from: .generateECDSA())!
+        let ecdsaKey = try #require(VerificationKey.ecdsa(from: .generateECDSA()))
 
         #expect(throws: RFC_7519.Error.self) {
             try jwt.verify(with: ecdsaKey, algorithm: .hmacSHA256)

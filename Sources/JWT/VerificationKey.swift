@@ -55,7 +55,9 @@ public struct VerificationKey: Sendable {
     /// - Throws: ``RFC_7519/Error/invalidKey(_:)`` if the data is not a valid key.
     public static func ecdsa(rawRepresentation: Data) throws(RFC_7519.Error) -> VerificationKey {
         do {
-            return VerificationKey(storage: .ecdsa(try P256.Signing.PublicKey(rawRepresentation: rawRepresentation)))
+            return VerificationKey(
+                storage: .ecdsa(try P256.Signing.PublicKey(rawRepresentation: rawRepresentation))
+            )
         } catch {
             throw .invalidKey("Invalid ECDSA public key: \(error)")
         }

@@ -25,21 +25,21 @@ let package = Package(
         .iOS(.v26),
         .tvOS(.v26),
         .watchOS(.v26),
-        .visionOS(.v26)
+        .visionOS(.v26),
     ],
     products: [
-        .library(name: .jwt, targets: [.jwt]),
+        .library(name: .jwt, targets: [.jwt])
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-crypto.git", "3.0.0"..<"5.0.0"),
-        .package(url: "https://github.com/swift-ietf/swift-rfc-7519.git", branch: "main")
+        .package(url: "https://github.com/swift-ietf/swift-rfc-7519.git", branch: "main"),
     ],
     targets: [
         .target(
             name: .jwt,
             dependencies: [
                 .rfc7519,
-                .crypto
+                .crypto,
             ]
         ),
         .testTarget(
@@ -47,7 +47,7 @@ let package = Package(
             dependencies: [
                 .jwt
             ]
-        )
+        ),
     ],
     swiftLanguageModes: [.v6]
 )
