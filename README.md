@@ -26,7 +26,7 @@ Add this package to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/swift-foundations/swift-json-web-token.git", from: "0.0.2")
+    .package(url: "https://github.com/swift-foundations/swift-json-web-token.git", branch: "main")
 ]
 ```
 
