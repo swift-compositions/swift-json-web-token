@@ -9,7 +9,7 @@ import Testing
 
 @testable import JWT
 
-@Suite("JWT Signature Rejection Tests")
+@Suite
 struct `JWT Signature Rejection Tests` {
 
     private static let secret = "a-secret-long-enough-for-hmac-sha-256-use"

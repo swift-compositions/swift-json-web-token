@@ -40,7 +40,7 @@ import Testing
 //        algorithm: .hmacSHA256
 //    )
 
-@Suite("JWT Crypto Tests")
+@Suite
 struct `JWT Crypto Tests` {
 
     // MARK: - Simple JWT Creation Examples

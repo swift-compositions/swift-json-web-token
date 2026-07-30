@@ -10,7 +10,7 @@ import Testing
 
 @testable import JWT
 
-@Suite("JWT Convenience Accessors")
+@Suite
 struct `JWT Convenience Tests` {
 
     @Test("Verify computed properties match actual properties")
