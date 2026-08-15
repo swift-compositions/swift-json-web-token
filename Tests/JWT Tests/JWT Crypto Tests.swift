@@ -111,7 +111,10 @@ struct `JWT Crypto Tests` {
 
         // Later, verify the token
         let verified = try JWT.parse(from: tokenString)
-        let isValid = try verified.verify(with: .symmetric(string: secretKey), algorithm: .hmacSHA256)
+        let isValid = try verified.verify(
+            with: .symmetric(string: secretKey),
+            algorithm: .hmacSHA256
+        )
         #expect(isValid)
     }
 
@@ -179,7 +182,9 @@ struct `JWT Crypto Tests` {
         let tokenString = try verificationToken.compactSerialization()
         // Use in URL: https://example.com/verify?token=\(tokenString)
 
-        #expect(verificationToken.payload.additionalClaim("action", as: String.self) == "verify-email")
+        #expect(
+            verificationToken.payload.additionalClaim("action", as: String.self) == "verify-email"
+        )
     }
 
     @Test("Password reset token")
@@ -240,7 +245,10 @@ struct `JWT Crypto Tests` {
 
         // Later, verify the token
         let receivedToken = try JWT.parse(from: tokenString)
-        let isValid = try receivedToken.verify(with: .symmetric(string: secret), algorithm: .hmacSHA256)
+        let isValid = try receivedToken.verify(
+            with: .symmetric(string: secret),
+            algorithm: .hmacSHA256
+        )
 
         #expect(isValid)
     }
@@ -289,13 +297,19 @@ struct `JWT Crypto Tests` {
 
         // Verify and extract claims
         let receivedToken = try JWT.parse(from: tokenString)
-        let isValid = try receivedToken.verify(with: .symmetric(string: secret), algorithm: .hmacSHA256)
+        let isValid = try receivedToken.verify(
+            with: .symmetric(string: secret),
+            algorithm: .hmacSHA256
+        )
 
         if isValid {
             // Safe to extract claims
             let userId = receivedToken.payload.additionalClaim("userId", as: String.self)
             let role = receivedToken.payload.additionalClaim("role", as: String.self)
-            let permissions = receivedToken.payload.additionalClaim("permissions", as: [String].self)
+            let permissions = receivedToken.payload.additionalClaim(
+                "permissions",
+                as: [String].self
+            )
 
             #expect(userId == "12345")
             #expect(role == "admin")
