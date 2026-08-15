@@ -37,6 +37,7 @@ extension JWT {
             switch self {
             case .single(let audience):
                 return [audience]
+
             case .multiple(let audiences):
                 return audiences
             }
@@ -52,19 +53,21 @@ extension JWT {
 extension JWT.Audience: Codable {
     public init(from decoder: any Decoder) throws {
         let container = try decoder.singleValueContainer()
-        if let single = try? container.decode(String.self) {
-            self = .single(single)
-        } else if let multiple = try? container.decode([String].self) {
-            self = .multiple(multiple)
-        } else {
-            throw DecodingError.typeMismatch(
-                JWT.Audience.self,
-                DecodingError.Context(
-                    codingPath: decoder.codingPath,
-                    debugDescription: "Audience must be a string or array of strings"
-                )
+        do {
+            self = .single(try container.decode(String.self))
+            return
+        } catch {}
+        do {
+            self = .multiple(try container.decode([String].self))
+            return
+        } catch {}
+        throw DecodingError.typeMismatch(
+            JWT.Audience.self,
+            DecodingError.Context(
+                codingPath: decoder.codingPath,
+                debugDescription: "Audience must be a string or array of strings"
             )
-        }
+        )
     }
 
     public func encode(to encoder: any Encoder) throws {
@@ -72,6 +75,7 @@ extension JWT.Audience: Codable {
         switch self {
         case .single(let audience):
             try container.encode(audience)
+
         case .multiple(let audiences):
             try container.encode(audiences)
         }

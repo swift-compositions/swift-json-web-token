@@ -41,16 +41,22 @@ extension RFC_7519 {
             switch self {
             case .invalidFormat(let message):
                 return "Invalid JWT format: \(message)"
+
             case .tokenExpired(let message):
                 return "JWT token expired: \(message)"
+
             case .tokenNotYetValid(let message):
                 return "JWT token not yet valid: \(message)"
+
             case .invalidSignature(let message):
                 return "Invalid JWT signature: \(message)"
+
             case .unsupportedAlgorithm(let message):
                 return "Unsupported algorithm: \(message)"
+
             case .encodingFailed(let message):
                 return "JWT encoding failed: \(message)"
+
             case .invalidKey(let message):
                 return "Invalid key: \(message)"
             }

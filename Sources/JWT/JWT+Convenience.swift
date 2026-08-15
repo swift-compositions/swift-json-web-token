@@ -92,8 +92,10 @@ extension JWT.Payload {
         switch aud {
         case .single(let value):
             return value
+
         case .multiple(let values):
             return values.first
+
         case .none:
             return nil
         }
@@ -124,6 +126,7 @@ extension JWT.Payload {
         case "nbf": return nbf != nil
         case "iat": return iat != nil
         case "jti": return jti != nil
+
         default:
             return additionalClaim(key, as: String.self) != nil
                 || additionalClaim(key, as: Int.self) != nil
