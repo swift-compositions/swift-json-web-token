@@ -1,4 +1,4 @@
-// swift-tools-version: 6.3.3
+// swift-tools-version: 6.4
 
 import PackageDescription
 
@@ -21,11 +21,11 @@ let package = Package(
     // disagrees, which aborts resolution for every package in the workspace.
     name: "swift-json-web-token",
     platforms: [
-        .macOS("27"),
-        .iOS("27"),
-        .tvOS("27"),
-        .watchOS("27"),
-        .visionOS("27"),
+        .macOS(.v27),
+        .iOS(.v27),
+        .tvOS(.v27),
+        .watchOS(.v27),
+        .visionOS(.v27),
     ],
     products: [
         .library(name: .jwt, targets: [.jwt])
