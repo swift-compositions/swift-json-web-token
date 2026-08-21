@@ -16,9 +16,7 @@ extension Target.Dependency {
 }
 
 let package = Package(
-    // Must match the repository/directory name: SwiftPM matches workspace override
-    // candidates by declared name and then rejects the override when the directory
-    // disagrees, which aborts resolution for every package in the workspace.
+
     name: "swift-json-web-token",
     platforms: [
         .macOS(.v27),

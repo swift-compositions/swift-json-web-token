@@ -1,41 +1,8 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-json-web-token open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// SPDX-License-Identifier: Apache-2.0
-//
-// ===----------------------------------------------------------------------===//
-
 @preconcurrency import Crypto
 import Foundation
 
-// MARK: - Signing
-
 extension JWT {
-    /// Creates and signs a JWT.
-    ///
-    /// - Parameters:
-    ///   - algorithm: The signing algorithm.
-    ///   - key: The signing key.
-    ///   - issuer: The `iss` claim.
-    ///   - subject: The `sub` claim.
-    ///   - audience: A single `aud` value (mutually exclusive with `audiences`).
-    ///   - audiences: Multiple `aud` values.
-    ///   - expiresIn: Seconds from now until expiration (sets `exp`).
-    ///   - expiresAt: An explicit expiration time (takes precedence over `expiresIn`).
-    ///   - notBefore: The `nbf` claim.
-    ///   - issuedAt: The `iat` claim (defaults to now).
-    ///   - jti: The `jti` claim.
-    ///   - claims: Additional custom claims.
-    ///   - headerParameters: Additional header parameters (`typ`, `cty`, `kid`
-    ///     are lifted into the registered header fields).
-    /// - Returns: The signed JWT.
-    /// - Throws: ``RFC_7519/Error``.
+
     public static func signed(
         algorithm: SigningAlgorithm,
         key: SigningKey,
@@ -69,8 +36,6 @@ extension JWT {
             exp = nil
         }
 
-        // 'alg' is never taken from headerParameters: it must come from the
-        // algorithm argument so it cannot be spoofed.
         var filteredHeaderParameters = headerParameters
         let typ = filteredHeaderParameters.removeValue(forKey: "typ") as? String ?? "JWT"
         let cty = filteredHeaderParameters.removeValue(forKey: "cty") as? String
@@ -101,7 +66,6 @@ extension JWT {
         return JWT(header: header, payload: payload, signature: signature)
     }
 
-    /// Creates and signs a JWT using HMAC-SHA256 (`HS256`).
     public static func hmacSHA256(
         issuer: String,
         subject: String,
@@ -121,7 +85,6 @@ extension JWT {
         )
     }
 
-    /// Creates and signs a JWT using HMAC-SHA384 (`HS384`).
     public static func hmacSHA384(
         issuer: String,
         subject: String,
@@ -141,7 +104,6 @@ extension JWT {
         )
     }
 
-    /// Creates and signs a JWT using HMAC-SHA512 (`HS512`).
     public static func hmacSHA512(
         issuer: String,
         subject: String,
@@ -161,7 +123,6 @@ extension JWT {
         )
     }
 
-    /// Creates and signs a JWT using ECDSA-P256-SHA256 (`ES256`).
     public static func ecdsaSHA256(
         issuer: String,
         subject: String,
@@ -182,22 +143,8 @@ extension JWT {
     }
 }
 
-// MARK: - Verification
-
 extension JWT {
-    /// Verifies the JWT signature (only) against a key, under the algorithm the
-    /// caller declares.
-    ///
-    /// The algorithm is supplied by the caller and never derived from the token.
-    /// The `alg` header is treated as an untrusted assertion: it must match
-    /// `algorithm`, and it selects nothing.
-    ///
-    /// - Parameters:
-    ///   - key: The verification key.
-    ///   - algorithm: The algorithm the caller requires the token to carry.
-    /// - Returns: `true` if the signature is valid.
-    /// - Throws: ``RFC_7519/Error/unsupportedAlgorithm(_:)`` if the header `alg`
-    ///   is not the declared algorithm.
+
     public func verify(
         with key: VerificationKey,
         algorithm: SigningAlgorithm
@@ -211,15 +158,6 @@ extension JWT {
         return try algorithm.verify(signature, input, key)
     }
 
-    /// Verifies the signature *and* validates the timing claims (`exp` / `nbf`).
-    ///
-    /// - Parameters:
-    ///   - key: The verification key.
-    ///   - algorithm: The algorithm the caller requires the token to carry.
-    ///   - currentTime: The reference time (defaults to now).
-    ///   - clockSkew: Allowed clock skew in seconds (defaults to 60).
-    /// - Returns: `true` if the signature is valid and the timing checks pass.
-    /// - Throws: ``RFC_7519/Error`` (including `tokenExpired` / `tokenNotYetValid`).
     public func verifyAndValidate(
         with key: VerificationKey,
         algorithm: SigningAlgorithm,

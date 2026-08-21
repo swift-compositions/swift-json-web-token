@@ -1,20 +1,5 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-json-web-token open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// SPDX-License-Identifier: Apache-2.0
-//
-// ===----------------------------------------------------------------------===//
-
 import Foundation
 
-/// A type-erased, `Codable` JSON value used to carry additional (non-registered)
-/// JWT header parameters and payload claims.
 enum AnyCodable: Codable, Hashable, Sendable {
     case string(String)
     case integer(Int)
@@ -23,8 +8,6 @@ enum AnyCodable: Codable, Hashable, Sendable {
     case array([AnyCodable])
     case dictionary([String: AnyCodable])
 
-    /// Wraps an arbitrary value, discriminating `Bool` before `Int` so that
-    /// boolean claims round-trip as booleans rather than integers.
     init(_ value: Any) {
         switch value {
         case let bool as Bool:
@@ -50,7 +33,6 @@ enum AnyCodable: Codable, Hashable, Sendable {
         }
     }
 
-    /// The underlying value, unwrapped to its native Swift type.
     var value: Any {
         switch self {
         case .string(let string):

@@ -1,31 +1,14 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-json-web-token open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// SPDX-License-Identifier: Apache-2.0
-//
-// ===----------------------------------------------------------------------===//
-
 @preconcurrency import Crypto
 import Foundation
 
-/// A JWS signing algorithm backed by swift-crypto.
 public struct SigningAlgorithm: Sendable {
-    /// The `alg` value as it appears in the JWT header (e.g. `"HS256"`).
+
     public let algorithmName: String
 
-    /// Signs the signing input with the given key.
     let sign: @Sendable (Data, SigningKey) throws(RFC_7519.Error) -> Data
 
-    /// Verifies a signature over the signing input with the given key.
     let verify: @Sendable (Data, Data, VerificationKey) throws(RFC_7519.Error) -> Bool
 
-    /// Creates a custom signing algorithm.
     public init(
         algorithmName: String,
         sign: @escaping @Sendable (Data, SigningKey) throws(RFC_7519.Error) -> Data,
@@ -38,7 +21,7 @@ public struct SigningAlgorithm: Sendable {
 }
 
 extension SigningAlgorithm {
-    /// HMAC using SHA-256 (`HS256`).
+
     public static let hmacSHA256 = SigningAlgorithm(
         algorithmName: "HS256",
         sign: { data, key throws(RFC_7519.Error) in
@@ -59,7 +42,6 @@ extension SigningAlgorithm {
         }
     )
 
-    /// HMAC using SHA-384 (`HS384`).
     public static let hmacSHA384 = SigningAlgorithm(
         algorithmName: "HS384",
         sign: { data, key throws(RFC_7519.Error) in
@@ -80,7 +62,6 @@ extension SigningAlgorithm {
         }
     )
 
-    /// HMAC using SHA-512 (`HS512`).
     public static let hmacSHA512 = SigningAlgorithm(
         algorithmName: "HS512",
         sign: { data, key throws(RFC_7519.Error) in
@@ -101,7 +82,6 @@ extension SigningAlgorithm {
         }
     )
 
-    /// ECDSA using P-256 and SHA-256 (`ES256`).
     public static let ecdsaSHA256 = SigningAlgorithm(
         algorithmName: "ES256",
         sign: { data, key throws(RFC_7519.Error) in
@@ -127,14 +107,6 @@ extension SigningAlgorithm {
         }
     )
 
-    /// Resolves a standard algorithm from its `alg` header value.
-    ///
-    /// Only the algorithms this library implements resolve; every other value —
-    /// including an absent one — returns `nil` and is treated as unsupported by
-    /// callers.
-    ///
-    /// - Parameter algorithmName: The `alg` value (e.g. `"HS256"`).
-    /// - Returns: The matching algorithm, or `nil` if unsupported.
     public static func from(algorithmName: String) -> SigningAlgorithm? {
         switch algorithmName {
         case "HS256": return .hmacSHA256

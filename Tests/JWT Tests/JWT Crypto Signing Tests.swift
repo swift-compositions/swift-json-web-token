@@ -1,8 +1,3 @@
-//
-//  JWT Crypto Signing Tests.swift
-//  RFC_7519JWTCrypto Tests
-//
-
 import Crypto
 import Foundation
 import Testing
@@ -10,8 +5,6 @@ import Testing
 @testable import JWT
 
 extension `JWT Crypto Tests` {
-
-    // MARK: - JWT Creation with swift-crypto Tests
 
     @Test("JWT creation with HMAC-SHA256")
     func testJWTHMACSHA256() throws {
@@ -33,7 +26,6 @@ extension `JWT Crypto Tests` {
         #expect(jwt.payload.iat != nil)
         #expect(jwt.payload.additionalClaim("role", as: String.self) == "admin")
 
-        // Verify the token can be parsed back
         let tokenString = try jwt.compactSerialization()
         let parsedJWT = try JWT.parse(from: tokenString)
 
@@ -58,7 +50,6 @@ extension `JWT Crypto Tests` {
         #expect(jwt.header.alg == "ES256")
         #expect(jwt.payload.iss == "ecdsa-issuer")
 
-        // Verify signature
         let isValid = try jwt.verify(with: verificationKey, algorithm: .ecdsaSHA256)
         #expect(isValid)
     }
@@ -81,9 +72,9 @@ extension `JWT Crypto Tests` {
 
     @Test("JWT creation with timing controls using swift-crypto")
     func testJWTTimingControls() throws {
-        let customIat = Date(timeIntervalSinceNow: -60)  // 1 minute ago
-        let customExp = Date(timeIntervalSinceNow: 7200)  // 2 hours from now
-        let customNbf = Date(timeIntervalSinceNow: 300)  // 5 minutes from now
+        let customIat = Date(timeIntervalSinceNow: -60)
+        let customExp = Date(timeIntervalSinceNow: 7200)
+        let customNbf = Date(timeIntervalSinceNow: 300)
 
         let jwt = try JWT.signed(
             algorithm: .hmacSHA256,
@@ -118,8 +109,6 @@ extension `JWT Crypto Tests` {
         #expect(jwt.header.additionalParameter("version", as: Int.self) == 2)
     }
 
-    // MARK: - Convenience Method Tests
-
     @Test("JWT HMAC-SHA256 convenience method")
     func testJWTHMACConvenience() throws {
         let jwt = try JWT.hmacSHA256(
@@ -138,7 +127,6 @@ extension `JWT Crypto Tests` {
         #expect(jwt.payload.additionalClaim("role", as: String.self) == "user")
         #expect(jwt.payload.additionalClaim("active", as: Bool.self) == true)
 
-        // Verify the token
         let verificationKey = VerificationKey.symmetric(string: "convenience-key")
         let isValid = try jwt.verify(with: verificationKey, algorithm: .hmacSHA256)
         #expect(isValid)
@@ -158,8 +146,6 @@ extension `JWT Crypto Tests` {
         #expect(jwt.payload.sub == "no-aud-user")
     }
 
-    // MARK: - Signature Verification Tests
-
     @Test("JWT signature verification with HMAC")
     func testJWTVerificationHMAC() throws {
         let verificationKey = VerificationKey.symmetric(string: "verification-key")
@@ -172,11 +158,9 @@ extension `JWT Crypto Tests` {
             secretKey: "verification-key"
         )
 
-        // Correct key should verify
         let isValidCorrect = try jwt.verify(with: verificationKey, algorithm: .hmacSHA256)
         #expect(isValidCorrect)
 
-        // Wrong key should fail
         let isValidWrong = try jwt.verify(with: wrongKey, algorithm: .hmacSHA256)
         #expect(!isValidWrong)
     }
@@ -185,15 +169,13 @@ extension `JWT Crypto Tests` {
     func testJWTVerificationWithTiming() throws {
         let verificationKey = VerificationKey.symmetric(string: "timing-verify-key")
 
-        // Create expired token
         let expiredJWT = try JWT.hmacSHA256(
             issuer: "expired-issuer",
             subject: "expired-user",
-            expiresIn: -3600,  // Expired 1 hour ago
+            expiresIn: -3600,
             secretKey: "timing-verify-key"
         )
 
-        // Signature should be valid but timing should fail
         let isSignatureValid = try expiredJWT.verify(with: verificationKey, algorithm: .hmacSHA256)
         #expect(isSignatureValid)
 
@@ -201,7 +183,6 @@ extension `JWT Crypto Tests` {
             try expiredJWT.verifyAndValidate(with: verificationKey, algorithm: .hmacSHA256)
         }
 
-        // Create valid token
         let validJWT = try JWT.hmacSHA256(
             issuer: "valid-issuer",
             subject: "valid-user",
@@ -209,7 +190,6 @@ extension `JWT Crypto Tests` {
             secretKey: "timing-verify-key"
         )
 
-        // Both signature and timing should be valid
         let isValid = try validJWT.verifyAndValidate(with: verificationKey, algorithm: .hmacSHA256)
         #expect(isValid)
     }
@@ -223,11 +203,10 @@ extension `JWT Crypto Tests` {
             key: .symmetric(string: "nbf-key"),
             issuer: "nbf-issuer",
             subject: "nbf-user",
-            expiresIn: 7200,  // Expires in 2 hours
-            notBefore: Date(timeIntervalSinceNow: 3600)  // Valid in 1 hour
+            expiresIn: 7200,
+            notBefore: Date(timeIntervalSinceNow: 3600)
         )
 
-        // Signature should be valid but timing should fail
         let isSignatureValid = try jwt.verify(with: verificationKey, algorithm: .hmacSHA256)
         #expect(isSignatureValid)
 
@@ -235,8 +214,6 @@ extension `JWT Crypto Tests` {
             try jwt.verifyAndValidate(with: verificationKey, algorithm: .hmacSHA256)
         }
     }
-
-    // MARK: - Algorithm Tests
 
     @Test("Signing algorithm names")
     func testSigningAlgorithmNames() {
@@ -257,14 +234,11 @@ extension `JWT Crypto Tests` {
         #expect(SigningAlgorithm.from(algorithmName: "UNKNOWN") == nil)
     }
 
-    // MARK: - Key Creation Tests
-
     @Test("Symmetric key creation")
     func testSymmetricKeyCreation() throws {
         let stringKey = SigningKey.symmetric(string: "test-key")
         let dataKey = SigningKey.symmetric(data: Data("test-key".utf8))
 
-        // Both should work for signing (can't directly compare the keys)
         let jwt1 = try JWT.signed(
             algorithm: .hmacSHA256,
             key: stringKey,
@@ -281,7 +255,6 @@ extension `JWT Crypto Tests` {
             expiresIn: 3600
         )
 
-        // Verify with equivalent verification keys
         let verifyKey1 = VerificationKey.symmetric(string: "test-key")
         let verifyKey2 = VerificationKey.symmetric(data: Data("test-key".utf8))
 
@@ -307,8 +280,6 @@ extension `JWT Crypto Tests` {
         let isValid = try jwt.verify(with: verificationKey, algorithm: .ecdsaSHA256)
         #expect(isValid)
     }
-
-    // MARK: - Edge Cases
 
     @Test("JWT static method with full configuration")
     func testJWTStaticMethodFullConfiguration() throws {

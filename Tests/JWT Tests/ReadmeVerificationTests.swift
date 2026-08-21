@@ -1,10 +1,3 @@
-//
-//  ReadmeVerificationTests.swift
-//  JWT Tests
-//
-//  Created for README verification
-//
-
 import Crypto
 import Foundation
 import Testing
@@ -14,21 +7,18 @@ import Testing
 @Suite("README Verification")
 struct ReadmeVerificationTests {
 
-    // MARK: - Quick Start Examples
-
     @Test("Example from README: Creating JWTs with HMAC-SHA256 (lines 35-50)")
     func exampleHMACSHA256Creation() throws {
-        // Create a JWT with HMAC-SHA256
+
         let jwt = try JWT.hmacSHA256(
             issuer: "example.com",
             subject: "user123",
             audience: "api.example.com",
-            expiresIn: 3600,  // 1 hour
+            expiresIn: 3600,
             claims: ["role": "admin", "permissions": ["read", "write"]],
             secretKey: "your-secret-key"
         )
 
-        // Get the token string
         let tokenString = try jwt.compactSerialization()
 
         #expect(!tokenString.isEmpty)
@@ -38,14 +28,14 @@ struct ReadmeVerificationTests {
 
     @Test("Example from README: Creating JWTs with ECDSA-SHA256 (lines 52-69)")
     func exampleECDSASHA256Creation() throws {
-        // Generate or load your ECDSA private key
+
         let privateKey = P256.Signing.PrivateKey()
 
         let jwt = try JWT.ecdsaSHA256(
             issuer: "secure-service",
             subject: "user456",
             audience: "mobile-app",
-            expiresIn: 7200,  // 2 hours
+            expiresIn: 7200,
             claims: ["scope": "user:read"],
             privateKey: privateKey
         )
@@ -57,7 +47,7 @@ struct ReadmeVerificationTests {
 
     @Test("Example from README: HMAC Verification (lines 73-89)")
     func exampleHMACVerification() throws {
-        // Create a JWT first
+
         let jwt = try JWT.hmacSHA256(
             issuer: "example.com",
             subject: "user123",
@@ -65,17 +55,13 @@ struct ReadmeVerificationTests {
         )
         let tokenString = try jwt.compactSerialization()
 
-        // Parse JWT from token string
         let parsedJWT = try JWT.parse(from: tokenString)
 
-        // Create verification key
         let verificationKey = VerificationKey.symmetric(string: "your-secret-key")
 
-        // Verify signature only
         let isValidSignature = try parsedJWT.verify(with: verificationKey, algorithm: .hmacSHA256)
         #expect(isValidSignature)
 
-        // Verify signature and validate timing (exp, nbf, iat)
         let isFullyValid = try parsedJWT.verifyAndValidate(
             with: verificationKey,
             algorithm: .hmacSHA256
@@ -85,18 +71,16 @@ struct ReadmeVerificationTests {
 
     @Test("Example from README: ECDSA Verification (lines 97-107)")
     func exampleECDSAVerification() throws {
-        // Create verification key from signing key
+
         let privateKey = P256.Signing.PrivateKey()
         let verificationKey = try #require(VerificationKey.ecdsa(from: .ecdsa(privateKey)))
 
-        // Create a JWT to verify
         let jwt = try JWT.ecdsaSHA256(
             issuer: "test",
             subject: "user",
             privateKey: privateKey
         )
 
-        // Verify the JWT
         let isValid = try jwt.verifyAndValidate(with: verificationKey, algorithm: .ecdsaSHA256)
         #expect(isValid)
     }
@@ -107,7 +91,6 @@ struct ReadmeVerificationTests {
         let publicKeyData = privateKey.publicKey.rawRepresentation
         let verificationKey = try VerificationKey.ecdsa(rawRepresentation: publicKeyData)
 
-        // Create a JWT to verify
         let jwt = try JWT.ecdsaSHA256(
             issuer: "test",
             subject: "user",
@@ -118,8 +101,6 @@ struct ReadmeVerificationTests {
         #expect(isValid)
     }
 
-    // MARK: - Advanced Usage Examples
-
     @Test("Example from README: Custom JWT Configuration (lines 124-140)")
     func exampleCustomConfiguration() throws {
         let jwt = try JWT.signed(
@@ -127,10 +108,10 @@ struct ReadmeVerificationTests {
             key: .symmetric(string: "custom-key"),
             issuer: "custom-issuer",
             subject: "user789",
-            audiences: ["api1.example.com", "api2.example.com"],  // Multiple audiences
-            expiresAt: Date(timeIntervalSinceNow: 86400),  // Custom expiration
-            notBefore: Date(timeIntervalSinceNow: 300),  // Valid in 5 minutes
-            jti: UUID().uuidString,  // JWT ID
+            audiences: ["api1.example.com", "api2.example.com"],
+            expiresAt: Date(timeIntervalSinceNow: 86400),
+            notBefore: Date(timeIntervalSinceNow: 300),
+            jti: UUID().uuidString,
             claims: [
                 "role": "moderator",
                 "permissions": ["read", "moderate"],
@@ -161,12 +142,10 @@ struct ReadmeVerificationTests {
             secretKey: "test-key"
         )
 
-        // Access standard claims
         #expect(jwt.payload.iss == "test-issuer")
         #expect(jwt.payload.sub == "test-subject")
         #expect(jwt.payload.exp != nil)
 
-        // Access custom claims
         let role = jwt.payload.additionalClaim("role", as: String.self)
         let permissions = jwt.payload.additionalClaim("permissions", as: [String].self)
         let isActive = jwt.payload.additionalClaim("active", as: Bool.self)
@@ -187,12 +166,11 @@ struct ReadmeVerificationTests {
 
         let verificationKey = VerificationKey.symmetric(string: "test-key")
 
-        // Validate with custom timing parameters
         let isValid = try jwt.verifyAndValidate(
             with: verificationKey,
             algorithm: .hmacSHA256,
-            currentTime: Date(),  // Custom current time
-            clockSkew: 120  // Allow 2 minutes clock skew
+            currentTime: Date(),
+            clockSkew: 120
         )
 
         #expect(isValid)
@@ -202,11 +180,9 @@ struct ReadmeVerificationTests {
     func exampleSymmetricKeys() throws {
         let keyData = Data("secret".utf8)
 
-        // Symmetric keys
         let stringKey = SigningKey.symmetric(string: "secret")
         let dataKey = SigningKey.symmetric(data: keyData)
 
-        // Create JWTs with both keys
         let jwt1 = try JWT.signed(
             algorithm: .hmacSHA256,
             key: stringKey,
@@ -233,17 +209,15 @@ struct ReadmeVerificationTests {
         let privateKeyData = privateKey.rawRepresentation
         let publicKeyData = privateKey.publicKey.rawRepresentation
 
-        // ECDSA keys
         let generatedKey = SigningKey.generateECDSA()
         let existingKey = try SigningKey.ecdsa(rawRepresentation: privateKeyData)
 
-        // Verification keys
         let symmetricVerify = VerificationKey.symmetric(string: "secret")
         let ecdsaVerify = VerificationKey.ecdsa(from: generatedKey)
         let publicKeyVerify = try VerificationKey.ecdsa(rawRepresentation: publicKeyData)
 
         #expect(ecdsaVerify != nil)
-        // Verify we can use these keys
+
         _ = symmetricVerify
         _ = existingKey
         _ = publicKeyVerify
@@ -255,14 +229,14 @@ struct ReadmeVerificationTests {
             let jwt = try JWT.hmacSHA256(
                 issuer: "test",
                 subject: "user",
-                expiresIn: -3600,  // Expired token
+                expiresIn: -3600,
                 secretKey: "test-key"
             )
             let key = VerificationKey.symmetric(string: "test-key")
             let isValid = try jwt.verifyAndValidate(with: key, algorithm: .hmacSHA256)
-            #expect(!isValid)  // Should not reach here
+            #expect(!isValid)
         } catch RFC_7519.Error.tokenExpired {
-            // Expected error for expired token
+
             #expect(true)
         } catch {
             #expect(Bool(false), "Unexpected error: \(error)")

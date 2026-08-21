@@ -1,59 +1,17 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-json-web-token open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// SPDX-License-Identifier: Apache-2.0
-//
-// ===----------------------------------------------------------------------===//
-
 import Foundation
 
-/// A JSON Web Token (JWT) as defined by RFC 7519.
-///
-/// A JWT carries a set of claims between two parties. In its compact
-/// serialization it consists of three Base64URL-encoded parts separated by
-/// periods: `header.payload.signature`.
-///
-/// This is the *typed* claims layer. The header and payload are decoded into
-/// the strongly-typed ``JWT/Header`` and ``JWT/Payload`` values; the underlying
-/// RFC 7519 structural byte layer lives upstream in `RFC_7519`.
-///
-/// ```swift
-/// let jwt = try JWT.hmacSHA256(
-///     issuer: "example.com",
-///     subject: "user123",
-///     secretKey: "your-secret-key"
-/// )
-/// let token = try jwt.compactSerialization()
-/// ```
 public struct JWT: Sendable {
-    /// The decoded, strongly-typed JWT header.
+
     public let header: Header
 
-    /// The decoded, strongly-typed JWT payload (claims).
     public let payload: Payload
 
-    /// The raw signature bytes.
     public let signature: Data
 
-    /// Original Base64URL-encoded header, preserved from parsing so that the
-    /// signing input can be reproduced byte-for-byte during verification.
     let headerBase64URL: String?
 
-    /// Original Base64URL-encoded payload, preserved from parsing.
     let payloadBase64URL: String?
 
-    /// Creates a JWT from its typed components.
-    ///
-    /// - Parameters:
-    ///   - header: The JWT header.
-    ///   - payload: The JWT payload (claims).
-    ///   - signature: The signature bytes.
     public init(header: Header, payload: Payload, signature: Data) {
         self.header = header
         self.payload = payload
@@ -62,8 +20,6 @@ public struct JWT: Sendable {
         self.payloadBase64URL = nil
     }
 
-    /// Creates a JWT from its typed components, preserving the original
-    /// Base64URL-encoded header and payload strings.
     init(
         header: Header,
         payload: Payload,
@@ -78,11 +34,6 @@ public struct JWT: Sendable {
         self.payloadBase64URL = payloadBase64URL
     }
 
-    /// Parses a JWT from its compact serialization (`header.payload.signature`).
-    ///
-    /// - Parameter token: The JWT string.
-    /// - Returns: The parsed, typed JWT.
-    /// - Throws: ``RFC_7519/Error`` on malformed input.
     public static func parse(from token: String) throws(RFC_7519.Error) -> JWT {
         let components = token.components(separatedBy: ".")
         guard components.count == 3 else {
@@ -122,10 +73,6 @@ public struct JWT: Sendable {
         )
     }
 
-    /// Serializes the JWT to its compact form (`header.payload.signature`).
-    ///
-    /// - Returns: The compact JWT string.
-    /// - Throws: ``RFC_7519/Error`` if the header or payload cannot be encoded.
     public func compactSerialization() throws(RFC_7519.Error) -> String {
         let headerBase64: String
         let payloadBase64: String
@@ -148,12 +95,6 @@ public struct JWT: Sendable {
         return "\(headerBase64).\(payloadBase64).\(signatureBase64)"
     }
 
-    /// The signing input (`BASE64URL(header).BASE64URL(payload)`) as ASCII bytes.
-    ///
-    /// Per RFC 7515 this is the exact byte sequence that is signed and verified.
-    ///
-    /// - Returns: The signing input bytes.
-    /// - Throws: ``RFC_7519/Error`` if the header or payload cannot be encoded.
     public func signingInput() throws(RFC_7519.Error) -> Data {
         if let originalHeader = headerBase64URL, let originalPayload = payloadBase64URL {
             return Data("\(originalHeader).\(originalPayload)".utf8)
@@ -174,16 +115,6 @@ public struct JWT: Sendable {
     }
 }
 
-// Memberwise `Equatable`/`Hashable` synthesis. All stored properties conform:
-// `Header` and `Payload` are `Hashable`, `signature` is `Data`, and both
-// preserved-Base64URL fields are `String?`. Synthesis must live in-module
-// because the two `internal` Base64URL properties are not visible across the
-// module boundary, which would otherwise block cross-module synthesis.
-//
-// The preserved Base64URL strings are intentionally included in equality: they
-// are verification-significant (they define the exact signing input reproduced
-// during verification), so two tokens that would serialize — and therefore
-// verify — differently must never compare equal.
 extension JWT: Equatable {}
 
 extension JWT: Hashable {}

@@ -1,8 +1,3 @@
-//
-//  JWT Signature Rejection Tests.swift
-//  JWT Tests
-//
-
 import Crypto
 import Foundation
 import Testing

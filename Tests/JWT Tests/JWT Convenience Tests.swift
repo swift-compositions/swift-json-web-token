@@ -1,10 +1,3 @@
-//
-//  JWT Convenience Tests.swift
-//  swift-jwt
-//
-//  Tests for JWT convenience accessors
-//
-
 import Foundation
 import Testing
 
@@ -15,7 +8,7 @@ struct `JWT Convenience Tests` {
 
     @Test("Verify computed properties match actual properties")
     func testComputedPropertiesMatchActualProperties() throws {
-        // Create a JWT with all properties set
+
         let jwt = try JWT.signed(
             algorithm: .hmacSHA256,
             key: .symmetric(string: "test-secret"),
@@ -30,13 +23,11 @@ struct `JWT Convenience Tests` {
             headerParameters: ["kid": "test-key-id", "cty": "test-content-type"]
         )
 
-        // Test Header computed properties match actual properties
         #expect(jwt.header.algorithm == jwt.header.alg)
         #expect(jwt.header.type == jwt.header.typ)
         #expect(jwt.header.contentType == jwt.header.cty)
         #expect(jwt.header.keyId == jwt.header.kid)
 
-        // Test Payload computed properties match actual properties
         #expect(jwt.payload.issuer == jwt.payload.iss)
         #expect(jwt.payload.subject == jwt.payload.sub)
         #expect(jwt.payload.audience == jwt.payload.aud)
@@ -45,7 +36,6 @@ struct `JWT Convenience Tests` {
         #expect(jwt.payload.issuedAtTime == jwt.payload.iat)
         #expect(jwt.payload.id == jwt.payload.jti)
 
-        // Verify the actual values
         #expect(jwt.header.algorithm == "HS256")
         #expect(jwt.header.type == "JWT")
         #expect(jwt.header.contentType == "test-content-type")
@@ -55,7 +45,6 @@ struct `JWT Convenience Tests` {
         #expect(jwt.payload.subject == "test-subject")
         #expect(jwt.payload.id == "test-jwt-id")
 
-        // Test JWT token property
         let tokenString = try jwt.token
         let compactString = try jwt.compactSerialization()
         #expect(tokenString == compactString)
@@ -69,7 +58,6 @@ struct `JWT Convenience Tests` {
             secretKey: "secret"
         )
 
-        // Test reading with convenience names
         #expect(jwt.header.algorithm == "HS256")
         #expect(jwt.header.algorithm == jwt.header.alg)
 
@@ -94,7 +82,6 @@ struct `JWT Convenience Tests` {
             secretKey: "secret"
         )
 
-        // Test reading with convenience names
         #expect(jwt.payload.issuer == "myapp.com")
         #expect(jwt.payload.issuer == jwt.payload.iss)
 
@@ -119,11 +106,11 @@ struct `JWT Convenience Tests` {
 
     @Test("Payload validation helpers")
     func testPayloadValidationHelpers() throws {
-        // Test expired token
+
         let expiredJWT = try JWT.hmacSHA256(
             issuer: "test",
             subject: "user",
-            expiresIn: -3600,  // Expired 1 hour ago
+            expiresIn: -3600,
             secretKey: "secret"
         )
 
@@ -131,11 +118,10 @@ struct `JWT Convenience Tests` {
         #expect(!expiredJWT.payload.isCurrentlyValid)
         #expect(expiredJWT.payload.timeUntilExpiration ?? 0 < 0)
 
-        // Test valid token
         let validJWT = try JWT.hmacSHA256(
             issuer: "test",
             subject: "user",
-            expiresIn: 3600,  // Expires in 1 hour
+            expiresIn: 3600,
             secretKey: "secret"
         )
 
@@ -143,13 +129,12 @@ struct `JWT Convenience Tests` {
         #expect(validJWT.payload.isCurrentlyValid)
         #expect(validJWT.payload.timeUntilExpiration ?? 0 > 0)
 
-        // Test not-yet-valid token
         let futureJWT = try JWT.signed(
             algorithm: .hmacSHA256,
             key: .symmetric(string: "secret"),
             issuer: "test",
             subject: "user",
-            notBefore: Date(timeIntervalSinceNow: 3600)  // Valid in 1 hour
+            notBefore: Date(timeIntervalSinceNow: 3600)
         )
 
         #expect(futureJWT.payload.isNotYetValid)
@@ -169,20 +154,16 @@ struct `JWT Convenience Tests` {
             secretKey: "secret"
         )
 
-        // Test claim() method
         #expect(jwt.payload.claim("role", as: String.self) == "admin")
         #expect(jwt.payload.claim("permissions", as: [String].self) == ["read", "write"])
         #expect(jwt.payload.claim("userId", as: Int.self) == 12345)
 
-        // Test claim with default
         #expect(jwt.payload.claim("missing", default: "default") == "default")
         #expect(jwt.payload.claim("role", default: "user") == "admin")
 
-        // Test hasClaim
         #expect(jwt.payload.hasClaim("role"))
         #expect(!jwt.payload.hasClaim("nonexistent"))
 
-        // Test standard claim keys
         let keys = jwt.payload.standardClaimKeys
         #expect(keys.contains("iss"))
         #expect(keys.contains("sub"))
@@ -190,7 +171,7 @@ struct `JWT Convenience Tests` {
 
     @Test("Audience convenience methods")
     func testAudienceConvenience() throws {
-        // Single audience
+
         let singleAudJWT = try JWT.hmacSHA256(
             issuer: "test",
             subject: "user",
@@ -202,7 +183,6 @@ struct `JWT Convenience Tests` {
         #expect(singleAudJWT.payload.audience?.contains("other.example.com") == false)
         #expect(singleAudJWT.payload.audienceValues == ["api.example.com"])
 
-        // Multiple audiences
         let multiAudJWT = try JWT.signed(
             algorithm: .hmacSHA256,
             key: .symmetric(string: "secret"),
@@ -228,7 +208,7 @@ struct `JWT Convenience Tests` {
         let token2 = try jwt.compactSerialization()
 
         #expect(token1 == token2)
-        #expect(token1.split(separator: ".").count == 3)  // header.payload.signature
+        #expect(token1.split(separator: ".").count == 3)
     }
 
     @Test("Quick validation methods")
@@ -241,18 +221,15 @@ struct `JWT Convenience Tests` {
             secretKey: secret
         )
 
-        // Test isValid
         #expect(jwt.isValid(with: .symmetric(string: secret), algorithm: .hmacSHA256))
         #expect(!jwt.isValid(with: .symmetric(string: "wrong-secret"), algorithm: .hmacSHA256))
 
-        // Test validation errors
         let errors = jwt.validationErrors(
             with: .symmetric(string: "wrong-secret"),
             algorithm: .hmacSHA256
         )
         #expect(errors.contains { $0.contains("signature") || $0.contains("Signature") })
 
-        // Test expired token
         let expiredJWT = try JWT.hmacSHA256(
             issuer: "test",
             subject: "user",

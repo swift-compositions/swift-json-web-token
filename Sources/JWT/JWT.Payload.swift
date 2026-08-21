@@ -1,56 +1,25 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-json-web-token open source project
-//
-// Copyright (c) 2026 Coen ten Thije Boonkkamp
-// Licensed under Apache License v2.0
-//
-// See LICENSE for license information
-//
-// SPDX-License-Identifier: Apache-2.0
-//
-// ===----------------------------------------------------------------------===//
-
 import Foundation
 
 extension JWT {
-    /// A JWT payload carrying the registered and custom claims (RFC 7519 §4).
+
     public struct Payload: Hashable, Sendable {
-        /// Issuer — the principal that issued the JWT (`iss`).
+
         public let iss: String?
 
-        /// Subject — the principal that is the subject of the JWT (`sub`).
         public let sub: String?
 
-        /// Audience — the recipients the JWT is intended for (`aud`).
         public let aud: Audience?
 
-        /// Expiration time after which the JWT must not be accepted (`exp`).
         public let exp: Date?
 
-        /// Time before which the JWT must not be accepted (`nbf`).
         public let nbf: Date?
 
-        /// Time at which the JWT was issued (`iat`).
         public let iat: Date?
 
-        /// A unique identifier for the JWT (`jti`).
         public let jti: String?
 
-        /// Claims beyond the registered ones above.
         private let additionalClaims: [String: AnyCodable]?
 
-        /// Creates a JWT payload.
-        ///
-        /// - Parameters:
-        ///   - iss: Issuer.
-        ///   - sub: Subject.
-        ///   - aud: Audience.
-        ///   - exp: Expiration time.
-        ///   - nbf: Not-before time.
-        ///   - iat: Issued-at time.
-        ///   - jti: JWT ID.
-        ///   - additionalClaims: Any additional custom claims.
         public init(
             iss: String? = nil,
             sub: String? = nil,
@@ -71,23 +40,10 @@ extension JWT {
             self.additionalClaims = additionalClaims?.mapValues(AnyCodable.init)
         }
 
-        /// Reads an additional (non-registered) claim.
-        ///
-        /// - Parameters:
-        ///   - key: The claim name.
-        ///   - type: The expected value type.
-        /// - Returns: The value if present and of the expected type.
         public func additionalClaim<T>(_ key: String, as type: T.Type = T.self) -> T? {
             additionalClaims?[key]?.value as? T
         }
 
-        /// Validates the timing claims (`exp` / `nbf`) against a reference time.
-        ///
-        /// - Parameters:
-        ///   - currentTime: The reference time (defaults to now).
-        ///   - clockSkew: Allowed clock skew in seconds (defaults to 60).
-        /// - Throws: ``RFC_7519/Error/tokenExpired(_:)`` or
-        ///   ``RFC_7519/Error/tokenNotYetValid(_:)``.
         public func validateTiming(
             currentTime: Date = Date(),
             clockSkew: TimeInterval = 60
