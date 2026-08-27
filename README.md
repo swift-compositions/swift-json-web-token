@@ -1,6 +1,6 @@
 # swift-jwt
 
-[![CI](https://github.com/swift-foundations/swift-json-web-token/workflows/CI/badge.svg)](https://github.com/swift-foundations/swift-json-web-token/actions/workflows/ci.yml)
+[![CI](https://github.com/swift-compositions/swift-json-web-token/workflows/CI/badge.svg)](https://github.com/swift-compositions/swift-json-web-token/actions/workflows/ci.yml)
 ![Development Status](https://img.shields.io/badge/status-active--development-blue.svg)
 
 Creates, signs, and verifies JSON Web Tokens (JWTs) over Apple's Crypto framework, with RFC 7519 claims and timing validation.
@@ -26,7 +26,7 @@ Add this package to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/swift-foundations/swift-json-web-token.git", branch: "main")
+    .package(url: "https://github.com/swift-compositions/swift-json-web-token.git", branch: "main")
 ]
 ```
 
@@ -233,7 +233,7 @@ do {
 
 This package is built on top of:
 
-- [swift-rfc-7519](https://github.com/swift-web-standards/swift-rfc-7519) - RFC 7519 compliant JWT implementation
+- [swift-rfc-7519](https://github.com/swift-ietf/swift-rfc-7519) - RFC 7519 compliant JWT implementation
 - [swift-crypto](https://github.com/apple/swift-crypto) - Apple's cryptographic framework
 
 ## Security Considerations
@@ -264,9 +264,7 @@ The package includes comprehensive tests covering:
 
 ### Used By
 
-- [swift-identities-types](https://github.com/coenttb/swift-identities-types): A Swift package with foundational types for authentication.
-- [swift-server-foundation](https://github.com/coenttb/swift-server-foundation): A Swift package with tools to simplify server development.
-- [swift-web-foundation](https://github.com/coenttb/swift-web-foundation): A Swift package with tools to simplify web development.
+- [swift-identities-types](https://github.com/swift-compositions/swift-identities-types): A Swift package with foundational types for authentication.
 
 ### Third-Party Dependencies
 
