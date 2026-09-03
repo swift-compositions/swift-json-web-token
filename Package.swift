@@ -2,19 +2,6 @@
 
 import PackageDescription
 
-extension String {
-    static let jwt: Self = "JWT"
-}
-
-extension Target.Dependency {
-    static var jwt: Self { .target(name: .jwt) }
-}
-
-extension Target.Dependency {
-    static var crypto: Self { .product(name: "Crypto", package: "swift-crypto") }
-    static var rfc7519: Self { .product(name: "RFC 7519", package: "swift-rfc-7519") }
-}
-
 let package = Package(
 
     name: "swift-json-web-token",
@@ -26,7 +13,7 @@ let package = Package(
         .visionOS(.v27),
     ],
     products: [
-        .library(name: .jwt, targets: [.jwt])
+        .library(name: "JWT", targets: ["JWT"])
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-crypto.git", "3.0.0"..<"5.0.0"),
@@ -34,20 +21,19 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: .jwt,
+            name: "JWT",
             dependencies: [
-                .rfc7519,
-                .crypto,
+                .product(name: "RFC 7519", package: "swift-rfc-7519"),
+                .product(name: "Crypto", package: "swift-crypto"),
             ]
         ),
         .testTarget(
-            name: .jwt.tests,
+            name: "JWT Tests",
             dependencies: [
-                .jwt
+                .target(name: "JWT")
             ]
         ),
     ],
     swiftLanguageModes: [.v6]
 )
 
-extension String { var tests: Self { self + " Tests" } }
